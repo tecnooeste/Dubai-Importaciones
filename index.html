@@ -2,408 +2,309 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dubai Importaciones – Lista de Precios</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lista de Precios — Tecno.Oeste</title>
+  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="shortcut icon" href="logo.png">
+  <link rel="apple-touch-icon" href="logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --gold: #C9A84C;
-      --gold-light: #E8C96A;
-      --gold-dark: #8A6A1F;
-      --bg: #0A0A0F;
-      --bg2: #111118;
-      --bg3: #1A1A24;
-      --text: #F0EDE6;
-      --text-muted: #7A7888;
-      --border: rgba(201,168,76,0.18);
+      --bg: #f7f7f5;
+      --header-bg: #1e2124;
+      --cat-bg: #2d3035;
+      --cat-text: #ffffff;
+      --row-hover: #f0f4ff;
+      --border: #d8d8d4;
+      --text: #1a1a18;
+      --muted: #888;
+      --accent: #1a6fff;
+      --mono: 'IBM Plex Mono', monospace;
+      --sans: 'IBM Plex Sans', sans-serif;
     }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Barlow', sans-serif;
-      min-height: 100vh;
-      overflow-x: hidden;
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; }
+    
+    nav {
+      background: var(--header-bg); padding: 0 2rem; height: 54px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 50;
     }
-
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image:
-        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(201,168,76,0.12) 0%, transparent 70%),
-        repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.025) 40px, rgba(201,168,76,0.025) 41px);
-      pointer-events: none;
-      z-index: 0;
+    .logo { font-family: var(--mono); font-size: 15px; font-weight: 500; color: #fff; text-decoration: none; }
+    .logo span { color: #5b9eff; }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .tc-display { font-family: var(--mono); font-size: 11px; color: #aaa; background: #2d3035; padding: 5px 12px; border-radius: 4px; }
+    .tc-display strong { color: #5b9eff; }
+    
+    .page-header { background: var(--header-bg); padding: 2.5rem 2rem 2rem; border-bottom: 3px solid #3a3f45; }
+    .page-header h1 { font-family: var(--sans); font-weight: 300; font-size: 2rem; color: #fff; letter-spacing: -0.03em; margin-bottom: 6px; }
+    .page-header p { font-family: var(--mono); font-size: 11px; color: #666; letter-spacing: 0.06em; text-transform: uppercase; }
+    
+    .controls { max-width: 1200px; margin: 0 auto; padding: 1.25rem 2rem; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .search-wrap { flex: 1; min-width: 200px; position: relative; }
+    .search-wrap input {
+      width: 100%; font-family: var(--mono); font-size: 13px;
+      padding: 8px 12px 8px 34px; border: 1px solid var(--border);
+      border-radius: 4px; background: #fff; color: var(--text); outline: none;
     }
-
-    /* ── HEADER ── */
-    header {
-      position: relative; z-index: 1;
-      text-align: center;
-      padding: 56px 24px 40px;
-      border-bottom: 1px solid var(--border);
+    .search-wrap input:focus { border-color: var(--accent); }
+    .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 14px; pointer-events: none; }
+    .filter-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+    .chip {
+      font-family: var(--mono); font-size: 11px; padding: 5px 12px;
+      border: 1px solid var(--border); border-radius: 999px;
+      background: transparent; color: var(--muted); cursor: pointer;
+      letter-spacing: 0.03em; transition: all 0.12s; white-space: nowrap;
     }
-
-    .logo-ornament {
-      display: flex; align-items: center; justify-content: center;
-      gap: 18px; margin-bottom: 16px;
+    .chip:hover { color: var(--text); border-color: #aaa; }
+    .chip.active { background: var(--header-bg); color: #fff; border-color: var(--header-bg); }
+    
+    .table-wrap { max-width: 1200px; margin: 0 auto 3rem; padding: 0 2rem; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); background: #fff; }
+    thead tr { background: var(--header-bg); }
+    thead th {
+      font-family: var(--mono); font-size: 11px; font-weight: 500;
+      color: #ccc; text-transform: uppercase; letter-spacing: 0.08em;
+      padding: 12px 16px; text-align: left; border-right: 1px solid #3a3f45; white-space: nowrap;
     }
-    .logo-ornament span {
-      display: block; height: 1px; width: 80px;
-      background: linear-gradient(to right, transparent, var(--gold));
+    thead th:last-child { border-right: none; }
+    tbody tr { transition: background 0.1s; }
+    tbody tr:hover { background: var(--row-hover) !important; }
+    td { padding: 10px 16px; border-bottom: 1px solid var(--border); border-right: 1px solid #ebebeb; vertical-align: middle; }
+    td:last-child { border-right: none; }
+    tr:last-child td { border-bottom: none; }
+    
+    .cat-row td { background: var(--cat-bg); color: var(--cat-text); font-weight: 500; font-size: 13px; padding: 9px 16px; }
+    .group-a td { background: #fefefe; }
+    .group-b td { background: #fdf9ec; }
+    .group-a:hover td, .group-b:hover td { background: var(--row-hover) !important; }
+    
+    .product-cell { font-size: 13.5px; color: var(--text); }
+    .price-usd { font-family: var(--mono); font-size: 14px; font-weight: 500; color: var(--text); white-space: nowrap; text-align: right; }
+    .price-ars { font-family: var(--mono); font-size: 13px; font-weight: 500; color: #1a6fff; white-space: nowrap; text-align: right; }
+    
+    col.col-usd  { width: 100px; }
+    col.col-ars  { width: 130px; }
+    
+    .empty-row td { text-align: center; padding: 3rem; color: var(--muted); font-family: var(--mono); font-size: 13px; }
+    .page-footer { max-width: 1200px; margin: 0 auto 2rem; padding: 0 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+    .footer-count { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+    @media (max-width: 700px) {
+      nav { padding: 0 1rem; }
+      .page-header { padding: 1.5rem 1rem 1.25rem; }
+      .controls, .table-wrap, .page-footer { padding-left: 1rem; padding-right: 1rem; }
     }
-    .logo-ornament span:last-child { background: linear-gradient(to left, transparent, var(--gold)); }
-    .logo-diamond { width: 10px; height: 10px; background: var(--gold); transform: rotate(45deg); flex-shrink: 0; }
-
-    h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(2.2rem, 6vw, 3.8rem); font-weight: 900;
-      letter-spacing: 0.04em;
-      background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 50%, var(--gold-dark) 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-      line-height: 1.1;
-    }
-
-    .header-sub {
-      font-size: 0.78rem; font-weight: 500; letter-spacing: 0.35em;
-      text-transform: uppercase; color: var(--text-muted); margin-top: 10px;
-    }
-
-    /* ── TC BAR ── */
-    .tc-bar {
-      position: relative; z-index: 1;
-      display: flex; align-items: center; justify-content: center;
-      gap: 16px; padding: 16px 24px;
-      background: var(--bg3); border-bottom: 1px solid var(--border);
-      flex-wrap: wrap;
-    }
-
-    .tc-label { font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); }
-
-    .tc-value {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.1rem; color: var(--gold-light); font-weight: 700;
-    }
-
-    /* ── FILTROS ── */
-    .filter-container {
-      position: relative; z-index: 1;
-      display: none; text-align: center; 
-      padding: 16px 24px; background: var(--bg2); 
-      border-bottom: 1px solid var(--border); 
-      gap: 10px; flex-wrap: wrap; 
-      justify-content: center;
-    }
-
-    .filter-btn {
-      background: var(--bg3);
-      color: var(--text-muted);
-      border: 1px solid var(--border);
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      font-weight: 500;
-      letter-spacing: 0.05em;
-      cursor: pointer;
-      transition: all 0.25s ease;
-    }
-    .filter-btn:hover {
-      border-color: var(--gold);
-      color: var(--text);
-    }
-    .filter-btn.active {
-      background: rgba(201,168,76,0.15);
-      border-color: var(--gold);
-      color: var(--gold-light);
-      font-weight: 600;
-    }
-
-    /* ── LOADING ── */
-    .loading-screen {
-      position: relative; z-index: 1;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      min-height: 60vh; gap: 20px;
-    }
-
-    .spinner {
-      width: 40px; height: 40px;
-      border: 2px solid var(--border);
-      border-top-color: var(--gold);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .loading-text { font-size: 0.8rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); }
-
-    .error-box {
-      position: relative; z-index: 1;
-      max-width: 500px; margin: 60px auto; padding: 28px;
-      background: var(--bg2); border: 1px solid rgba(220,80,80,0.3);
-      border-radius: 12px; text-align: center;
-    }
-    .error-box h3 { color: #F07070; margin-bottom: 10px; font-family: 'Playfair Display', serif; }
-    .error-box p { font-size: 0.82rem; color: var(--text-muted); line-height: 1.7; }
-    .error-box code { color: var(--gold); font-size: 0.78rem; }
-
-    /* ── MAIN ── */
-    main { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 48px 24px 80px; }
-
-    .category { margin-bottom: 56px; }
-
-    .category-header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
-
-    .category-title {
-      font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700;
-      color: var(--gold-light); white-space: nowrap;
-    }
-
-    .category-line { flex: 1; height: 1px; background: linear-gradient(to right, var(--border), transparent); }
-
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-
-    /* ── CARD ── */
-    .card {
-      background: var(--bg2); border: 1px solid var(--border);
-      border-radius: 12px; padding: 24px;
-      position: relative; overflow: hidden;
-      transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
-      animation: fadeUp 0.5s ease both;
-    }
-
-    .card::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-      background: linear-gradient(90deg, transparent, var(--gold), transparent);
-      opacity: 0; transition: opacity 0.25s;
-    }
-
-    .card:hover { transform: translateY(-4px); border-color: rgba(201,168,76,0.45); box-shadow: 0 16px 48px rgba(0,0,0,0.5); }
-    .card:hover::before { opacity: 1; }
-
-    .card-brand { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
-    .card-model { font-size: 1.05rem; font-weight: 500; color: var(--text); margin-bottom: 20px; line-height: 1.3; }
-
-    .card-prices { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
-
-    .price-usd { display: flex; flex-direction: column; gap: 2px; }
-    .price-label { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); }
-    .price-usd .amount { font-family: 'Playfair Display', serif; font-size: 1.55rem; font-weight: 700; color: var(--gold-light); line-height: 1; }
-
-    .price-divider { width: 1px; height: 36px; background: var(--border); align-self: flex-end; margin-bottom: 2px; }
-
-    .price-ars { display: flex; flex-direction: column; gap: 2px; }
-    .price-ars .amount { font-size: 1rem; font-weight: 600; color: var(--text); line-height: 1; }
-
-    /* ── FOOTER ── */
-    footer { position: relative; z-index: 1; border-top: 1px solid var(--border); padding: 28px 24px; text-align: center; }
-    .footer-note { font-size: 0.72rem; color: var(--text-muted); letter-spacing: 0.08em; line-height: 1.8; }
-    .footer-note strong { color: var(--gold); }
-
-    @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
-
-    @media (max-width: 600px) { .grid{grid-template-columns:1fr} h1{font-size:2rem} }
   </style>
 </head>
 <body>
 
-<header>
-  <div class="logo-ornament">
-    <span></span><div class="logo-diamond"></div><span></span>
+<nav>
+  <a href="#" class="logo">Tecno<span>.</span>Oeste</a>
+  <div class="nav-right">
+    <div class="tc-display">USD → ARS: <strong id="tc-nav">$Cargando...</strong></div>
   </div>
-  <h1>DUBAI IMPORTACIONES</h1>
-  <p class="header-sub">Lista de precios oficial &nbsp;·&nbsp; Smartphones</p>
-</header>
+</nav>
 
-<!-- Tipo de cambio -->
-<div class="tc-bar" id="tcBar" style="display:none">
-  <span class="tc-label">Tipo de cambio</span>
-  <span class="tc-value" id="tcValue">—</span>
+<div class="page-header">
+  <h1>Lista de precios</h1>
+  <p id="fecha-header">Actualizado: — · Precios en USD y ARS</p>
 </div>
 
-<!-- Filtros por categoría -->
-<div class="filter-container" id="filterContainer"></div>
-
-<!-- Loading -->
-<div class="loading-screen" id="loadingScreen">
-  <div class="spinner"></div>
-  <p class="loading-text">Cargando datos desde Google Sheets…</p>
+<div class="controls">
+  <div class="search-wrap">
+    <span class="search-icon">⌕</span>
+    <input type="text" id="search" placeholder="Buscar producto..." oninput="applyFilters()" />
+  </div>
+  <div class="filter-chips" id="chips"></div>
 </div>
 
-<!-- Error -->
-<div class="error-box" id="errorBox" style="display:none">
-  <h3>No se pudo cargar la planilla</h3>
-  <p>
-    Asegurate de que la planilla esté compartida como<br>
-    <strong>"Cualquier persona con el enlace puede ver"</strong>.<br><br>
-    ID usado: <code>1NzYu2WBVc0JiYDmA_SYF-s1_jHmw63lR51zNXDWu29A</code>
-  </p>
+<div class="table-wrap">
+  <table>
+    <colgroup>
+      <col />
+      <col class="col-usd" />
+      <col class="col-ars" />
+    </colgroup>
+    <thead>
+      <tr>
+        <th>Producto</th>
+        <th style="text-align:right;">Precio USD</th>
+        <th style="text-align:right;">Precio ARS</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
 </div>
 
-<!-- Contenido -->
-<main id="mainContent" style="display:none"></main>
-
-<footer>
-  <p class="footer-note">
-    Precios y tipo de cambio sincronizados desde <strong>Google Sheets</strong>.<br>
-    Los precios en <strong>ARS</strong> se calculan con el tipo de cambio de la planilla "configuracion".<br>
-    Dubai Importaciones &copy; 2026
-  </p>
-</footer>
+<div class="page-footer">
+  <span class="footer-count" id="footer-count"></span>
+  <span class="footer-count">Tecno.Oeste &copy; 2026</span>
+</div>
 
 <script>
-  const SHEET_ID = "1NzYu2WBVc0JiYDmA_SYF-s1_jHmw63lR51zNXDWu29A";
+const SHEET_ID = "1NzYu2WBVc0JiYDmA_SYF-s1_jHmw63lR51zNXDWu29A";
 
-  // URL corregida para evitar bloqueos de redirección y CORS
-  function csvUrl(sheetName) {
-    return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&sheet=${encodeURIComponent(sheetName)}`;
+const CONFIG_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&sheet=Configuracion`;
+const PRODUCTOS_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&sheet=Productos`;
+
+let TC = parseFloat(localStorage.getItem("tc") || "1200");
+let data = [];
+let catOrder = [];
+let categories = ["Todas"];
+let activeFilter = "Todas";
+
+const now = new Date();
+document.getElementById("fecha-header").textContent = 
+  "Actualizado: " + now.toLocaleDateString("es-AR", {day:"numeric", month:"long", year:"numeric"}) + " · Precios en USD y ARS";
+
+function updateTCDisplay() {
+  document.getElementById("tc-nav").textContent = "$" + Math.round(TC).toLocaleString("es-AR");
+}
+
+const chipsEl = document.getElementById("chips");
+function renderChips(){
+  chipsEl.innerHTML = "";
+  categories.forEach(cat => {
+    const btn = document.createElement("button");
+    btn.className = "chip" + (cat === "Todas" ? " active" : "");
+    btn.textContent = cat;
+    btn.onclick = () => {
+      activeFilter = cat;
+      document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+      btn.classList.add("active");
+      applyFilters();
+    };
+    chipsEl.appendChild(btn);
+  });
+}
+
+function fmtARS(usd) {
+  return "$" + Math.round(usd * TC).toLocaleString("es-AR");
+}
+
+function applyFilters() {
+  const q = document.getElementById("search").value.toLowerCase().trim();
+  const tbody = document.getElementById("tbody");
+  tbody.innerHTML = "";
+  
+  const filtered = data.filter(r => {
+    const matchCat = activeFilter === "Todas" || r.cat === activeFilter;
+    const matchQ = !q || r.name.toLowerCase().includes(q) || r.cat.toLowerCase().includes(q);
+    return matchCat && matchQ;
+  });
+  
+  document.getElementById("footer-count").textContent =
+    filtered.length + " producto" + (filtered.length !== 1 ? "s" : "") + " mostrado" + (filtered.length !== 1 ? "s" : "");
+    
+  if (filtered.length === 0) {
+    const tr = document.createElement("tr");
+    tr.className = "empty-row";
+    tr.innerHTML = '<td colspan="3">Sin resultados.</td>';
+    tbody.appendChild(tr);
+    return;
   }
-
-  async function fetchCSV(sheetName) {
-    const res = await fetch(csvUrl(sheetName));
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const text = await res.text();
-    return parseCSV(text);
-  }
-
-  function parseCSV(text) {
-    return text.trim().split("\n").map(line => {
-      const cols = [];
-      let cur = "", inQ = false;
-      for (let i = 0; i < line.length; i++) {
-        const c = line[i];
-        if (c === '"') { inQ = !inQ; }
-        else if (c === ',' && !inQ) { cols.push(cur.trim()); cur = ""; }
-        else { cur += c; }
-      }
-      cols.push(cur.trim());
-      return cols;
+  
+  const grouped = {};
+  filtered.forEach(r => { if (!grouped[r.cat]) grouped[r.cat] = []; grouped[r.cat].push(r); });
+  
+  const catList = catOrder.filter(c => grouped[c]);
+  let groupIdx = 0;
+  
+  catList.forEach(cat => {
+    const catRow = document.createElement("tr");
+    catRow.className = "cat-row";
+    catRow.innerHTML = `<td colspan="3">${cat}</td>`;
+    tbody.appendChild(catRow);
+    
+    const cls = groupIdx % 2 === 0 ? "group-a" : "group-b";
+    grouped[cat].forEach(r => {
+      const tr = document.createElement("tr");
+      tr.className = cls;
+      tr.innerHTML = `
+        <td class="product-cell">${r.name}</td>
+        <td style="text-align:right;" class="price-usd">US$ ${r.price.toLocaleString("en-US")}</td>
+        <td style="text-align:right;" class="price-ars">${fmtARS(r.price)}</td>
+      `;
+      tbody.appendChild(tr);
     });
-  }
+    groupIdx++;
+  });
+}
 
-  function fmt(n) {
-    return Math.round(n).toLocaleString("es-AR");
-  }
+function cleanCSVCell(cell) {
+  if (!cell) return "";
+  return cell.replace(/^"|"$/g, '').replace(/\r/g, '').trim();
+}
 
-  function showError() {
-    document.getElementById("loadingScreen").style.display = "none";
-    document.getElementById("errorBox").style.display = "block";
-  }
-
-  async function init() {
-    try {
-      // ── 1. Leer tipo de cambio ──
-      const configRows = await fetchCSV("Configuracion");
-      const tcRow = configRows[1]; 
-      const tc = parseFloat(tcRow[1].replace(/[^0-9.,]/g, "").replace(",", "."));
-      if (isNaN(tc) || tc <= 0) throw new Error("Tipo de cambio inválido");
-
-      document.getElementById("tcValue").textContent = `USD 1 = $${fmt(tc)} ARS`;
-      document.getElementById("tcBar").style.display = "flex";
-
-      // ── 2. Leer productos ──
-      const prodRows = await fetchCSV("Productos");
-      const products = [];
-      for (let i = 1; i < prodRows.length; i++) {
-        const row = prodRows[i];
-        if (!row || row.length < 3) continue;
-        const categoria = row[0].trim();
-        const modelo    = row[1].trim();
-        const precioRaw = row[2].replace(/[^0-9.,]/g, "").replace(",", ".");
-        const usd       = parseFloat(precioRaw);
-        if (!categoria || !modelo || isNaN(usd)) continue;
-        products.push({ categoria, modelo, usd });
-      }
-
-      if (products.length === 0) throw new Error("Sin productos");
-
-      // ── 3. Agrupar por categoría ──
-      const grouped = {};
-      for (const p of products) {
-        if (!grouped[p.categoria]) grouped[p.categoria] = [];
-        grouped[p.categoria].push(p);
-      }
-
-      // ── 4. Renderizar Productos ──
-      const main = document.getElementById("mainContent");
-      main.innerHTML = "";
-
-      for (const [cat, items] of Object.entries(grouped)) {
-        const ars_items = items.map(p => {
-          const ars = p.usd * tc;
-          return `
-            <div class="card">
-              <div class="card-brand">${escHtml(cat)}</div>
-              <div class="card-model">${escHtml(p.modelo)}</div>
-              <div class="card-prices">
-                <div class="price-usd">
-                  <span class="price-label">USD</span>
-                  <span class="amount">$${fmt(p.usd)}</span>
-                </div>
-                <div class="price-divider"></div>
-                <div class="price-ars">
-                  <span class="price-label">ARS</span>
-                  <span class="amount">$${fmt(ars)}</span>
-                </div>
-              </div>
-            </div>`;
-        }).join("");
-
-        const section = document.createElement("section");
-        section.className = "category";
-        section.setAttribute("data-category", cat.toLowerCase());
-        section.innerHTML = `
-          <div class="category-header">
-            <h2 class="category-title">${escHtml(cat)}</h2>
-            <div class="category-line"></div>
-          </div>
-          <div class="grid">${ars_items}</div>`;
-        main.appendChild(section);
-      }
-
-      // ── 5. Generar Filtros Dinámicos ──
-      const filterContainer = document.getElementById("filterContainer");
-      filterContainer.innerHTML = `<button class="filter-btn active" onclick="filterCat('all', this)">Todos</button>`;
+async function fetchProductos() {
+  try {
+    const response = await fetch(PRODUCTOS_URL);
+    if (!response.ok) throw new Error("Error cargando productos");
+    const csv = await response.text();
+    const lines = csv.split("\n");
+    data = [];
+    
+    for(let i = 1; i < lines.length; i++) {
+      if (!lines[i].trim()) continue;
       
-      Object.keys(grouped).forEach(cat => {
-        filterContainer.innerHTML += `<button class="filter-btn" onclick="filterCat('${cat.toLowerCase()}', this)">${escHtml(cat)}</button>`;
-      });
-
-      // Mostrar interfaz final
-      document.getElementById("loadingScreen").style.display = "none";
-      filterContainer.style.display = "flex";
-      main.style.display = "block";
-
-    } catch (e) {
-      console.error(e);
-      showError();
+      const cols = lines[i].split(",").map(cleanCSVCell);
+      if(cols.length < 3) continue;
+      
+      const precioRaw = cols[2].replace(/[^0-9.,]/g, "").replace(",", ".");
+      const precio = parseFloat(precioRaw);
+      
+      if(!cols[0] || !cols[1] || isNaN(precio)) continue;
+      data.push({cat: cols[0], name: cols[1], price: precio});
     }
+  } catch(e) { 
+    console.error("Error en fetchProductos:", e); 
   }
+}
 
-  // Función global para manejar el filtrado
-  function filterCat(catName, btn) {
-    const buttons = document.querySelectorAll('.filter-btn');
-    buttons.forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-
-    const sections = document.querySelectorAll('.category');
-    sections.forEach(sec => {
-      if (catName === 'all' || sec.getAttribute('data-category') === catName) {
-        sec.style.display = 'block';
-      } else {
-        sec.style.display = 'none';
+async function fetchDolarFromSheet() {
+  try {
+    const response = await fetch(CONFIG_URL);
+    if (!response.ok) throw new Error("Error en la conexión con la planilla de configuración");
+    const text = await response.text();
+    const lines = text.split("\n");
+    
+    for (let line of lines) {
+      if (!line.trim()) continue;
+      const columns = line.split(",").map(cleanCSVCell);
+      const key = columns[0];
+      const value = columns[1];
+      
+      if (key && key.toLowerCase() === "dolar") {
+        const parsedValue = parseFloat(value.replace(/[^0-9.,]/g, "").replace(",", "."));
+        if (!isNaN(parsedValue) && parsedValue > 0) {
+          TC = parsedValue;
+          localStorage.setItem("tc", TC);
+          break;
+        }
       }
-    });
+    }
+  } catch (error) {
+    console.error("No se pudo obtener el TC online, usando valor de respaldo:", error);
+  } finally {
+    updateTCDisplay();
+    applyFilters();
   }
+}
 
-  function escHtml(s) {
-    return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-  }
-
-  init();
+(async () => {
+  // Carga inicial directa sin pantallas de bloqueo intermedias
+  updateTCDisplay(); 
+  await fetchProductos();
+  
+  const uniqueCats = [...new Set(data.map(x => x.cat))];
+  catOrder = uniqueCats;
+  categories = ["Todas", ...catOrder];
+  
+  renderChips();
+  await fetchDolarFromSheet();
+})();
 </script>
 </body>
 </html>
