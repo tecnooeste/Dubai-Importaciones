@@ -88,10 +88,37 @@
       font-size: 1.1rem; color: var(--gold-light); font-weight: 700;
     }
 
-    .tc-badge {
-      font-size: 0.7rem; color: var(--gold);
-      background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.3);
-      border-radius: 20px; padding: 3px 12px; letter-spacing: 0.12em;
+    /* ── FILTROS ── */
+    .filter-container {
+      position: relative; z-index: 1;
+      display: none; text-align: center; 
+      padding: 16px 24px; background: var(--bg2); 
+      border-bottom: 1px solid var(--border); 
+      gap: 10px; flex-wrap: wrap; 
+      justify-content: center;
+    }
+
+    .filter-btn {
+      background: var(--bg3);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+    .filter-btn:hover {
+      border-color: var(--gold);
+      color: var(--text);
+    }
+    .filter-btn.active {
+      background: rgba(201,168,76,0.15);
+      border-color: var(--gold);
+      color: var(--gold-light);
+      font-weight: 600;
     }
 
     /* ── LOADING ── */
@@ -176,14 +203,6 @@
     .footer-note { font-size: 0.72rem; color: var(--text-muted); letter-spacing: 0.08em; line-height: 1.8; }
     .footer-note strong { color: var(--gold); }
 
-    /* ── SYNC INDICATOR ── */
-    .sync-dot {
-      display: inline-block; width: 7px; height: 7px;
-      background: #6EDBA8; border-radius: 50%; margin-right: 6px;
-      animation: pulse 2s ease-in-out infinite;
-    }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-
     @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
 
     @media (max-width: 600px) { .grid{grid-template-columns:1fr} h1{font-size:2rem} }
@@ -199,12 +218,14 @@
   <p class="header-sub">Lista de precios oficial &nbsp;·&nbsp; Smartphones</p>
 </header>
 
-<!-- Tipo de cambio (se llena desde la Sheet) -->
+<!-- Tipo de cambio -->
 <div class="tc-bar" id="tcBar" style="display:none">
   <span class="tc-label">Tipo de cambio</span>
   <span class="tc-value" id="tcValue">—</span>
-  <span class="tc-badge"><span class="sync-dot"></span>Desde Google Sheets</span>
 </div>
+
+<!-- Filtros por categoría -->
+<div class="filter-container" id="filterContainer"></div>
 
 <!-- Loading -->
 <div class="loading-screen" id="loadingScreen">
@@ -229,15 +250,16 @@
   <p class="footer-note">
     Precios y tipo de cambio sincronizados desde <strong>Google Sheets</strong>.<br>
     Los precios en <strong>ARS</strong> se calculan con el tipo de cambio de la planilla "configuracion".<br>
-    Dubai Importaciones &copy; 2025
+    Dubai Importaciones &copy; 2026
   </p>
 </footer>
 
 <script>
   const SHEET_ID = "1NzYu2WBVc0JiYDmA_SYF-s1_jHmw63lR51zNXDWu29A";
 
+  // URL corregida para evitar bloqueos de redirección y CORS
   function csvUrl(sheetName) {
-    return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
+    return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&sheet=${encodeURIComponent(sheetName)}`;
   }
 
   async function fetchCSV(sheetName) {
@@ -249,7 +271,6 @@
 
   function parseCSV(text) {
     return text.trim().split("\n").map(line => {
-      // Handle quoted fields
       const cols = [];
       let cur = "", inQ = false;
       for (let i = 0; i < line.length; i++) {
@@ -276,18 +297,15 @@
     try {
       // ── 1. Leer tipo de cambio ──
       const configRows = await fetchCSV("Configuracion");
-      // Fila 0 = encabezados (DOLAR, VALOR), fila 1 = datos
-      const tcRow = configRows[1]; // A2, B2
+      const tcRow = configRows[1]; 
       const tc = parseFloat(tcRow[1].replace(/[^0-9.,]/g, "").replace(",", "."));
       if (isNaN(tc) || tc <= 0) throw new Error("Tipo de cambio inválido");
 
-      // Mostrar TC bar
       document.getElementById("tcValue").textContent = `USD 1 = $${fmt(tc)} ARS`;
       document.getElementById("tcBar").style.display = "flex";
 
       // ── 2. Leer productos ──
       const prodRows = await fetchCSV("Productos");
-      // Fila 0 = encabezados (Categoria, Producto, Precio), desde fila 1 = datos
       const products = [];
       for (let i = 1; i < prodRows.length; i++) {
         const row = prodRows[i];
@@ -309,7 +327,7 @@
         grouped[p.categoria].push(p);
       }
 
-      // ── 4. Renderizar ──
+      // ── 4. Renderizar Productos ──
       const main = document.getElementById("mainContent");
       main.innerHTML = "";
 
@@ -336,6 +354,7 @@
 
         const section = document.createElement("section");
         section.className = "category";
+        section.setAttribute("data-category", cat.toLowerCase());
         section.innerHTML = `
           <div class="category-header">
             <h2 class="category-title">${escHtml(cat)}</h2>
@@ -345,13 +364,39 @@
         main.appendChild(section);
       }
 
+      // ── 5. Generar Filtros Dinámicos ──
+      const filterContainer = document.getElementById("filterContainer");
+      filterContainer.innerHTML = `<button class="filter-btn active" onclick="filterCat('all', this)">Todos</button>`;
+      
+      Object.keys(grouped).forEach(cat => {
+        filterContainer.innerHTML += `<button class="filter-btn" onclick="filterCat('${cat.toLowerCase()}', this)">${escHtml(cat)}</button>`;
+      });
+
+      // Mostrar interfaz final
       document.getElementById("loadingScreen").style.display = "none";
+      filterContainer.style.display = "flex";
       main.style.display = "block";
 
     } catch (e) {
       console.error(e);
       showError();
     }
+  }
+
+  // Función global para manejar el filtrado
+  function filterCat(catName, btn) {
+    const buttons = document.querySelectorAll('.filter-btn');
+    buttons.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const sections = document.querySelectorAll('.category');
+    sections.forEach(sec => {
+      if (catName === 'all' || sec.getAttribute('data-category') === catName) {
+        sec.style.display = 'block';
+      } else {
+        sec.style.display = 'none';
+      }
+    });
   }
 
   function escHtml(s) {
